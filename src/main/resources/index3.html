@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>NETTY SOCKET.IO DEMO</title>
+    <base>
+    <script src="static/js/jquery-1.7.2.min.js"></script>
+    <script src="static/js/socket.io.js"></script>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        #console {
+            height: 450px;
+            overflow: auto;
+        }
+
+        .username-msg {
+            color: orange;
+        }
+
+        .connect-msg {
+            color: green;
+        }
+
+        .disconnect-msg {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+<div id="console" class="well"></div>
+<form class="well form-inline" onsubmit="return false;">
+    <input id="msg" class="input-xlarge" type="text" placeholder="Type something..."/>
+    <button type="button" onClick="sendMessage()" class="btn" id="send">Send</button>
+    <button type="button" onClick="sendDisconnect()" class="btn">Disconnect</button>
+</form>
+</body>
+    <script type="text/javascript">
+        var socket;
+        connect();
+
+        function connect() {
+            var userId = '22';
+            var opts = {
+                query: 'userId=' + userId
+            };
+            socket = io.connect('http://localhost:9099', opts);
+            socket.on('connect', function () {
+                console.log("连接成功");
+                serverOutput('<span class="connect-msg">连接成功</span>');
+            });
+            socket.on('push_event', function (data) {
+                var d = JSON.stringify(data);
+                output('<span class="username-msg">' + d + ' </span>');
+                console.log(d);
+            });
+
+            socket.on('disconnect', function () {
+                serverOutput('<span class="disconnect-msg">' + '已下线! </span>');
+            });
+        }
+
+        function output(message) {
+            var element = $("<div>" + " " + message + "</div>");
+            $('#console').prepend(element);
+        }
+
+        function serverOutput(message) {
+            var element = $("<div>" + message + "</div>");
+            $('#console').prepend(element);
+        }
+
+        function sendMessage() {
+            var message = $('#msg').val();
+            $('#msg').val('');
+            //给99发消息
+            var userId = 88;
+            var jsonObject = {userId: userId, content: message};
+            socket.emit('reply_event', jsonObject);
+        }
+
+        function sendDisconnect() {
+            socket.disconnect();
+        }
+    </script>
+</html>
